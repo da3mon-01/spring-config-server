@@ -7,6 +7,8 @@ buildscript {
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath('io.spring.gradle:dependency-management-plugin:0.5.4.RELEASE')
+		classpath('se.transmode.gradle:gradle-docker:1.2')
 	}
 }
 
@@ -14,6 +16,11 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'spring-boot'
 apply plugin: 'idea'
+
+apply plugin: 'docker'
+
+group 'daemon'
+version '1.0-SNAPSHOT'
 
 jar {
 	baseName = 'spring-config-server'
@@ -35,5 +42,17 @@ dependencies {
 dependencyManagement {
 	imports {
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:Brixton.SR6"
+	}
+}
+
+task buildDocker(type: Docker, dependsOn: build){
+	push = false
+	applicationName = jar.baseName
+	dockerfile = file('src/main/docker/Dockerfile')
+	doFirst{
+		copy{
+			from jar
+			into stageDir
+		}
 	}
 }
